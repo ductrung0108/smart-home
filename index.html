@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Home</title>
+  <link href="main.css" rel="stylesheet" >
+  <script type="module" src="index.js"></script>
+</head>
+<body>
+  <div id="loading" class="loading-page">
+    <h1>Welcome Home</h1>
+  </div>
+  <h1>Our Home</h1>
+  <h2>Light</h2>
+  <label class="switch">
+    <input id="light" type="checkbox">
+    <span id="lightUI" class="slider round"></span>
+  </label>
+  <h2>Luminosity</h2>
+  <div id="luminosityUI" class="slidecontainer">
+    <input type="range" min="1" max="100" value="50" class="rangeSlider" id="luminosity">
+  </div>
+  <h2>Window</h2>
+  <label id="switch" class="switch">
+    <input id="window" type="checkbox">
+    <span id="windowUI" class="slider round"></span>
+  </label>
+
+  <h2>Door lock</h2>
+  <label id="switch" class="switch">
+    <input id="lock" type="checkbox">
+    <span id="lockUI" class="slider round"></span>
+  </label>
+
+  <h2>Gas reading</h2>
+  <h3 id="gas">72/50</h3>
+
+  <h2>Water spray</h2>
+  <label id="switch" class="switch">
+    <input id="waterspray" type="checkbox">
+    <span id="watersprayUI" class="slider round"></span>
+  </label>
+
+  <h2>Front-door camera</h2>
+  <div class="camera"></div>
+  
+</body>
+</html>
