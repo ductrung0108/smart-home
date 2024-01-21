@@ -31,7 +31,7 @@ const windowUI = document.getElementById('windowUI');
 
 const database = getDatabase(app);
 
-const lightref = ref(database, 'light');
+const lightref = ref(database, 'data/light/');
 const windowref = ref(database, 'window');
 const luminosityref = ref(database, 'luminosity');
 const gasref = ref(database, 'gas');

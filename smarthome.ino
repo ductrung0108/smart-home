@@ -1,10 +1,22 @@
+/*
+PCA: 
+22 SCL
+21 SDA
+3v VCC
+GND GND
+*/
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <FirebaseESP32.h>
-#include <FirebaseJson.h>
 #include <addons/TokenHelper.h>
 #include <addons/RTDBHelper.h>
-
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>
+#include <iostream>
+#include <string>
+using namespace std;
+ 
 #define WIFI_SSID "tttttrunggggg"
 #define WIFI_PASSWORD "ductrung"
 #define API_KEY "AIzaSyCH7NojcKtJIG98LKan1WxfFsDIn1bNe9A"
@@ -16,14 +28,27 @@ FirebaseData fbdo;
 FirebaseJson json;
 FirebaseAuth auth;
 FirebaseConfig config;
+Adafruit_PWMServoDriver pca9685 = Adafruit_PWMServoDriver(0x40);
 
 unsigned long sendDataPrevMillis = 0;
 int count = 0;
 uint32_t idleTimeForStream = 15000;
 
+int winservo = 0;
+int lockservo = 1;
+int led1 = 35;
+int led2 = 32;
+int led3 = 33;
+int led4 = 25;
+
+int lum;
+
 void setup() {
 
   Serial.begin(115200);
+
+  pca9685.begin();
+  pca9685.setPWMFreq(50);
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to Wi-Fi");
@@ -51,54 +76,78 @@ void setup() {
     Serial.printf("sream begin error, %s\n\n", fbdo.errorReason().c_str());
 }
 
+void updateWindow() {
+ if (fbdo.dataPath() == "/window") {
+    if (fbdo.stringData() == "true") {
+      pca9685.setPWM(winservo, 0, 300);
+    } else if (fbdo.stringData() == "false") {
+      pca9685.setPWM(winservo, 0, 80);
+    }
+  } else {
+    return;
+  }
+}
+
+void updateLock() {
+  if (fbdo.dataPath() == "/lock") {
+    if (fbdo.stringData() == "true") {
+      pca9685.setPWM(lockservo, 0, 600);
+    } else if (fbdo.stringData() == "false") {
+      pca9685.setPWM(lockservo, 0, 80);
+    }
+  } else {
+    return;
+  } 
+}
+
+void updateLight() {
+  if (fbdo.dataPath() == "/luminosity") {
+    lum = atoi( fbdo.stringData().c_str() );
+  }
+}
+
+void updateGas() {
+  
+}
+
 void loop() {
   if (Firebase.ready() && (millis() - sendDataPrevMillis > idleTimeForStream || sendDataPrevMillis == 0))
   {
     sendDataPrevMillis = millis();
-    count++;
   }
 
-  if (Firebase.ready())
-  {
-
+  if (Firebase.ready()) {
     if (!Firebase.readStream(fbdo))
       Serial.printf("sream read error, %s\n\n", fbdo.errorReason().c_str());
 
-    if (fbdo.streamTimeout())
-    {
+    if (fbdo.streamTimeout()) {
       Serial.println("stream timed out, resuming...\n");
 
       if (!fbdo.httpConnected())
         Serial.printf("error code: %d, reason: %s\n\n", fbdo.httpCode(), fbdo.errorReason().c_str());
     }
 
-    if (fbdo.streamAvailable())
-    {
+    if (fbdo.streamAvailable()) {
       Serial.printf("sream path, %s\nevent path, %s\ndata type, %s\nevent type, %s\nvalue, %s\n\n",
                     fbdo.streamPath().c_str(),
                     fbdo.dataPath().c_str(),
                     fbdo.dataType().c_str(),
                     fbdo.eventType().c_str(),
                     fbdo.stringData().c_str());
-      if (fbdo.eventType().c_str() == 'put') {
-        Serial.println("Initial data");
-      } else if (fbdo.dataPath().c_str() == '/light') {
+      updateWindow();
+      updateLock();
+      updateLight();
 
-      } else if (fbdo.dataPath().c_str() == '/luminosity') {
-
-      } else if (fbdo.dataPath().c_str() == '/window') {
-        
-      } else if (fbdo.dataPath().c_str() == '/lock') {
-        
-      } else if (fbdo.dataPath().c_str() == '/waterspray') {
-        
-      }
-    }
-  }
+      analogWrite(led1, lum);
+      analogWrite(led2, lum);
+      analogWrite(led3, lum);
+      analogWrite(led4, lum);
+    } 
 
   // After calling stream.keepAlive, now we can track the server connecting status
-  if (!fbdo.httpConnected())
-  {
-    // Server was disconnected!
+    if (!fbdo.httpConnected())
+    {
+      // Server was disconnected!
+    }
   }
 }
